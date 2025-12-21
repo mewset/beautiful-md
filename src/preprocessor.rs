@@ -65,10 +65,11 @@ fn fix_headings(content: &str) -> String {
                         // Reconstruct heading with proper spacing
                         return if ch.is_whitespace() {
                             // Already has space after hashes, just normalize
-                            format!("{} {}", hashes, rest_trimmed.trim_end_matches('#').trim())
+                            let text = rest_trimmed.trim_end_matches('#').trim();
+                            format!("{hashes} {text}")
                         } else {
                             // No space after hashes, add it
-                            format!("{} {}", hashes, content)
+                            format!("{hashes} {content}")
                         };
                     }
                 }
@@ -94,9 +95,7 @@ fn fix_list_markers(content: &str) -> String {
             let trimmed = line.trim_start();
 
             // Check for unordered list without space
-            if trimmed.starts_with('-')
-                && !trimmed.starts_with("---")
-                && !trimmed.starts_with("- ")
+            if trimmed.starts_with('-') && !trimmed.starts_with("---") && !trimmed.starts_with("- ")
             {
                 let rest = &trimmed[1..];
                 return format!("{}- {}", " ".repeat(leading_spaces), rest.trim_start());
@@ -177,7 +176,7 @@ fn fix_table_pipes(content: &str, diagnostics: &mut Diagnostics) -> String {
 
             // Add opening pipe if missing
             if !fixed.starts_with('|') {
-                fixed = format!("|{}", fixed);
+                fixed = format!("|{fixed}");
                 had_issues = true;
             }
 
@@ -212,8 +211,7 @@ fn fix_table_pipes(content: &str, diagnostics: &mut Diagnostics) -> String {
                                 DiagnosticKind::MalformedTable,
                                 line_number,
                                 format!(
-                                    "Table has inconsistent columns: expected {}, found {}",
-                                    expected, columns
+                                    "Table has inconsistent columns: expected {expected}, found {columns}"
                                 ),
                             )
                             .with_snippet(trimmed),
@@ -230,7 +228,7 @@ fn fix_table_pipes(content: &str, diagnostics: &mut Diagnostics) -> String {
                         line_number,
                         "Fixed missing table pipes",
                     )
-                    .with_snippet(format!("{} → {}", trimmed, fixed)),
+                    .with_snippet(format!("{trimmed} → {fixed}")),
                 );
             }
 

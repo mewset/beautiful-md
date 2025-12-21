@@ -94,10 +94,7 @@ pub fn format_markdown(content: &str, config: &Config) -> Result<(String, Diagno
 /// # Errors
 ///
 /// Returns an error if the file cannot be read, parsed, formatted, or written.
-pub fn format_file<P: AsRef<std::path::Path>>(
-    path: P,
-    config: &Config,
-) -> Result<Diagnostics> {
+pub fn format_file<P: AsRef<std::path::Path>>(path: P, config: &Config) -> Result<Diagnostics> {
     let content = std::fs::read_to_string(path.as_ref())?;
     let (formatted, diagnostics) = format_markdown(&content, config)?;
     std::fs::write(path.as_ref(), formatted)?;

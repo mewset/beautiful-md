@@ -57,6 +57,7 @@ impl Diagnostic {
     }
 
     /// Add a code snippet to the diagnostic.
+    #[must_use]
     pub fn with_snippet(mut self, snippet: impl Into<String>) -> Self {
         self.snippet = Some(snippet.into());
         self
@@ -70,10 +71,10 @@ impl fmt::Display for Diagnostic {
             Severity::Info => "ℹ️",
         };
 
-        write!(f, "{} Line {}: {}", severity_icon, self.line, self.message)?;
+        write!(f, "{severity_icon} Line {}: {}", self.line, self.message)?;
 
         if let Some(snippet) = &self.snippet {
-            write!(f, "\n  │ {}", snippet)?;
+            write!(f, "\n  │ {snippet}")?;
         }
 
         Ok(())
@@ -88,7 +89,8 @@ pub struct Diagnostics {
 
 impl Diagnostics {
     /// Create a new empty diagnostics collection.
-    pub fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Self {
             messages: Vec::new(),
         }
@@ -110,21 +112,25 @@ impl Diagnostics {
     }
 
     /// Check if there are any diagnostics.
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.messages.is_empty()
     }
 
     /// Get the number of diagnostics.
+    #[must_use]
     pub fn len(&self) -> usize {
         self.messages.len()
     }
 
     /// Get all diagnostics.
+    #[must_use]
     pub fn messages(&self) -> &[Diagnostic] {
         &self.messages
     }
 
     /// Get diagnostics by severity.
+    #[must_use]
     pub fn by_severity(&self, severity: Severity) -> Vec<&Diagnostic> {
         self.messages
             .iter()
@@ -138,9 +144,10 @@ impl Diagnostics {
             return;
         }
 
-        eprintln!("\n{} issues found:", self.len());
+        let len = self.len();
+        eprintln!("\n{len} issues found:");
         for diagnostic in &self.messages {
-            eprintln!("{}", diagnostic);
+            eprintln!("{diagnostic}");
         }
         eprintln!();
     }
