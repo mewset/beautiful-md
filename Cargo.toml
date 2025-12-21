@@ -1,0 +1,58 @@
+[package]
+name = "beautiful-md"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.70"
+authors = ["mewset"]
+license = "MIT OR Apache-2.0"
+description = "A CLI tool to format and beautify Markdown files"
+repository = "https://github.com/mewset/beautiful-md"
+keywords = ["markdown", "formatter", "cli", "beautify"]
+categories = ["command-line-utilities", "text-processing"]
+readme = "README.md"
+
+[dependencies]
+# CLI argument parsing
+clap = { version = "4.5", features = ["derive", "cargo"] }
+
+# Markdown parsing
+pulldown-cmark = "0.12"
+pulldown-cmark-to-cmark = "17"
+
+# Configuration
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+
+# Error handling
+thiserror = "2.0"
+anyhow = "1.0"
+
+# File handling
+glob = "0.3"
+dirs = "5.0"
+
+[dev-dependencies]
+# Testing
+assert_cmd = "2.0"
+predicates = "3.0"
+tempfile = "3.8"
+pretty_assertions = "1.4"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.dev]
+opt-level = 0
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+nursery = "warn"
+cargo = "warn"
