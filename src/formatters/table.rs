@@ -2,15 +2,17 @@
 //!
 //! Handles alignment, padding, and beautification of Markdown tables.
 
+#![allow(clippy::format_push_string)]
+#![allow(clippy::uninlined_format_args)]
+
 use crate::config::TableConfig;
-use crate::error::Result;
 
 /// Format tables in markdown content.
 ///
 /// Aligns columns, adds padding, and ensures consistent spacing.
-pub fn format_tables(content: &str, config: &TableConfig) -> Result<String> {
+pub fn format_tables(content: &str, config: &TableConfig) -> String {
     if !config.align {
-        return Ok(content.to_string());
+        return content.to_string();
     }
 
     let mut result = String::new();
@@ -47,7 +49,7 @@ pub fn format_tables(content: &str, config: &TableConfig) -> Result<String> {
         result.push_str(&format_table(&table_lines, config));
     }
 
-    Ok(result)
+    result
 }
 
 /// Format a single table.
@@ -109,7 +111,11 @@ fn format_table(lines: &[String], config: &TableConfig) -> String {
                 formatted.push_str(&format!("{padding}{sep}{padding}|"));
             } else {
                 // Regular cell
-                formatted.push_str(&format!("{padding}{:<width$}{padding}|", cell, width = width));
+                formatted.push_str(&format!(
+                    "{padding}{:<width$}{padding}|",
+                    cell,
+                    width = width
+                ));
             }
         }
 
@@ -127,7 +133,7 @@ mod tests {
     fn test_format_simple_table() {
         let input = "|Name|Age|\n|---|---|\n|Alice|30|";
         let config = TableConfig::default();
-        let result = format_tables(input, &config).unwrap();
+        let result = format_tables(input, &config);
 
         assert!(result.contains("Name"));
         assert!(result.contains("Alice"));
@@ -141,7 +147,7 @@ mod tests {
             ..Default::default()
         };
 
-        let result = format_tables(input, &config).unwrap();
+        let result = format_tables(input, &config);
         assert_eq!(result, input);
     }
 }

@@ -1,5 +1,7 @@
 //! beautiful-md binary entry point.
 
+#![allow(clippy::multiple_crate_versions)]
+
 use anyhow::{Context, Result};
 use beautiful_md::{format_file, format_markdown, Config};
 use std::fs;
@@ -97,13 +99,9 @@ fn format_files_in_place(
 }
 
 /// Format file and write to specific output path.
-fn format_to_file(
-    input: &Path,
-    output: &Path,
-    config: &Config,
-) -> Result<()> {
-    let content = fs::read_to_string(input)
-        .with_context(|| format!("Failed to read {}", input.display()))?;
+fn format_to_file(input: &Path, output: &Path, config: &Config) -> Result<()> {
+    let content =
+        fs::read_to_string(input).with_context(|| format!("Failed to read {}", input.display()))?;
 
     let formatted = format_markdown(&content, config)
         .with_context(|| format!("Failed to format {}", input.display()))?;
@@ -126,8 +124,7 @@ fn format_to_stdout(files: &[std::path::PathBuf], config: &Config) -> Result<()>
         let formatted = format_markdown(&content, config)
             .with_context(|| format!("Failed to format {}", file.display()))?;
 
-        writeln!(handle, "{formatted}")
-            .context("Failed to write to stdout")?;
+        writeln!(handle, "{formatted}").context("Failed to write to stdout")?;
     }
 
     Ok(())
@@ -166,9 +163,7 @@ fn expand_glob_patterns(patterns: &[std::path::PathBuf]) -> Result<Vec<std::path
     let mut files = Vec::new();
 
     for pattern in patterns {
-        let pattern_str = pattern
-            .to_str()
-            .context("Invalid UTF-8 in glob pattern")?;
+        let pattern_str = pattern.to_str().context("Invalid UTF-8 in glob pattern")?;
 
         for entry in glob::glob(pattern_str)
             .with_context(|| format!("Invalid glob pattern: {pattern_str}"))?

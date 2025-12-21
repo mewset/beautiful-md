@@ -11,28 +11,27 @@ mod heading;
 mod list;
 mod table;
 
-pub use code::format_code_blocks;
-pub use heading::format_headings;
-pub use list::format_lists;
-pub use table::format_tables;
+use code::format_code_blocks;
+use heading::format_headings;
+use list::format_lists;
+use table::format_tables;
 
 use crate::config::Config;
-use crate::error::Result;
 
 /// Apply all formatters to markdown content.
 ///
 /// This function orchestrates the application of all individual formatters
 /// in the correct order to avoid conflicts.
-pub fn apply_all(content: &str, config: &Config) -> Result<String> {
+pub fn apply_all(content: &str, config: &Config) -> String {
     let mut result = content.to_string();
 
     // Apply formatters in order of least to most invasive
-    result = format_code_blocks(&result, &config.code)?;
-    result = format_tables(&result, &config.tables)?;
-    result = format_headings(&result, &config.headings)?;
-    result = format_lists(&result, &config.lists)?;
+    result = format_code_blocks(&result, &config.code);
+    result = format_tables(&result, &config.tables);
+    result = format_headings(&result, &config.headings);
+    result = format_lists(&result, &config.lists);
 
-    Ok(result)
+    result
 }
 
 #[cfg(test)]
@@ -44,6 +43,6 @@ mod tests {
         let content = "# Test\n\nSome text.";
         let config = Config::default();
         let result = apply_all(content, &config);
-        assert!(result.is_ok());
+        assert!(!result.is_empty());
     }
 }

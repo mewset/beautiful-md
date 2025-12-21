@@ -23,7 +23,7 @@ use crate::error::{Error, Result};
 /// // Or use defaults
 /// let config = Config::default();
 /// ```
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct Config {
     /// Table formatting options.
@@ -92,17 +92,6 @@ pub struct CodeConfig {
     pub fence_style: String,
 }
 
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            tables: TableConfig::default(),
-            headings: HeadingConfig::default(),
-            lists: ListConfig::default(),
-            code: CodeConfig::default(),
-        }
-    }
-}
-
 impl Default for TableConfig {
     fn default() -> Self {
         Self {
@@ -150,7 +139,7 @@ impl Config {
     /// Returns an error if the file cannot be read or parsed.
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
         let content = std::fs::read_to_string(path.as_ref()).map_err(Error::Io)?;
-        let config: Config = toml::from_str(&content)?;
+        let config: Self = toml::from_str(&content)?;
         Ok(config)
     }
 
@@ -161,6 +150,7 @@ impl Config {
     /// 2. User's home directory
     ///
     /// If no config file is found, returns default configuration.
+    #[must_use]
     pub fn load_default() -> Self {
         // Try current directory
         if let Ok(config) = Self::from_file(".beautiful-md.toml") {
@@ -185,9 +175,8 @@ impl Config {
     ///
     /// Returns an error if the file cannot be written.
     pub fn save<P: AsRef<Path>>(&self, path: P) -> Result<()> {
-        let content = toml::to_string_pretty(self).map_err(|e| {
-            Error::ConfigError(format!("Failed to serialize config: {e}"))
-        })?;
+        let content = toml::to_string_pretty(self)
+            .map_err(|e| Error::ConfigError(format!("Failed to serialize config: {e}")))?;
         std::fs::write(path.as_ref(), content)?;
         Ok(())
     }

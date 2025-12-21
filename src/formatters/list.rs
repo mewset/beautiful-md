@@ -3,12 +3,11 @@
 //! Handles indentation and marker consistency for Markdown lists.
 
 use crate::config::ListConfig;
-use crate::error::Result;
 
 /// Format lists in markdown content.
 ///
 /// Normalizes indentation and list markers according to configuration.
-pub fn format_lists(content: &str, config: &ListConfig) -> Result<String> {
+pub fn format_lists(content: &str, config: &ListConfig) -> String {
     let lines: Vec<&str> = content.lines().collect();
     let mut result = Vec::new();
     let mut ordered_counter = 1;
@@ -32,7 +31,7 @@ pub fn format_lists(content: &str, config: &ListConfig) -> Result<String> {
             let indent = " ".repeat(level * config.indent_size);
 
             if config.normalize_numbers {
-                result.push(format!("{indent}{}. {content}", ordered_counter));
+                result.push(format!("{indent}{ordered_counter}. {content}"));
                 ordered_counter += 1;
             } else {
                 // Keep original numbering
@@ -48,26 +47,20 @@ pub fn format_lists(content: &str, config: &ListConfig) -> Result<String> {
         }
     }
 
-    Ok(result.join("\n"))
+    result.join("\n")
 }
 
 /// Check if a line is an unordered list item.
 fn is_unordered_list_item(line: &str) -> bool {
     let trimmed = line.trim();
-    (trimmed.starts_with("- ")
-        || trimmed.starts_with("* ")
-        || trimmed.starts_with("+ "))
+    (trimmed.starts_with("- ") || trimmed.starts_with("* ") || trimmed.starts_with("+ "))
         && !trimmed.starts_with("---")
 }
 
 /// Check if a line is an ordered list item.
 fn is_ordered_list_item(line: &str) -> bool {
     let trimmed = line.trim();
-    trimmed
-        .chars()
-        .next()
-        .map_or(false, |c| c.is_ascii_digit())
-        && trimmed.contains(". ")
+    trimmed.chars().next().is_some_and(|c| c.is_ascii_digit()) && trimmed.contains(". ")
 }
 
 /// Parse list item to determine indentation level and content.
@@ -81,11 +74,9 @@ fn parse_list_item(line: &str) -> (usize, String) {
         trimmed[2..].to_string()
     } else if is_ordered_list_item(trimmed) {
         // Find the period and skip number
-        if let Some(pos) = trimmed.find(". ") {
-            trimmed[pos + 2..].to_string()
-        } else {
-            trimmed.to_string()
-        }
+        trimmed
+            .find(". ")
+            .map_or_else(|| trimmed.to_string(), |pos| trimmed[pos + 2..].to_string())
     } else {
         trimmed.to_string()
     };
@@ -132,7 +123,7 @@ mod tests {
             normalize_numbers: true,
         };
 
-        let result = format_lists(input, &config).unwrap();
+        let result = format_lists(input, &config);
         assert!(result.contains("- Item 1"));
         assert!(result.contains("- Item 2"));
         assert!(result.contains("- Item 3"));

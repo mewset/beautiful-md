@@ -17,16 +17,16 @@ use crate::formatters;
 /// Returns an error if parsing or formatting fails.
 pub fn format(content: &str, config: &Config) -> Result<String> {
     // Parse markdown
-    let events = parse_markdown(content)?;
+    let events = parse_markdown(content);
 
     // Apply formatters in order
-    let formatted = apply_formatters(events, config)?;
+    let formatted = apply_formatters(&events, config)?;
 
     Ok(formatted)
 }
 
 /// Parse markdown content into events.
-fn parse_markdown(content: &str) -> Result<Vec<pulldown_cmark::Event<'_>>> {
+fn parse_markdown(content: &str) -> Vec<pulldown_cmark::Event<'_>> {
     use pulldown_cmark::{Options, Parser};
 
     let mut options = Options::empty();
@@ -37,16 +37,11 @@ fn parse_markdown(content: &str) -> Result<Vec<pulldown_cmark::Event<'_>>> {
     options.insert(Options::ENABLE_HEADING_ATTRIBUTES);
 
     let parser = Parser::new_ext(content, options);
-    let events: Vec<_> = parser.collect();
-
-    Ok(events)
+    parser.collect()
 }
 
 /// Apply all formatters to the parsed markdown.
-fn apply_formatters(
-    events: Vec<pulldown_cmark::Event<'_>>,
-    config: &Config,
-) -> Result<String> {
+fn apply_formatters(events: &[pulldown_cmark::Event<'_>], config: &Config) -> Result<String> {
     use pulldown_cmark_to_cmark::cmark;
 
     // For now, we'll use the basic cmark formatter
@@ -56,7 +51,7 @@ fn apply_formatters(
         .map_err(|e| Error::FormattingError(format!("Failed to format markdown: {e}")))?;
 
     // Apply post-processing formatters
-    let formatted = formatters::apply_all(&buf, config)?;
+    let formatted = formatters::apply_all(&buf, config);
 
     Ok(formatted)
 }
@@ -77,7 +72,6 @@ mod tests {
     fn test_parse_markdown() {
         let input = "# Heading\n\nParagraph";
         let events = parse_markdown(input);
-        assert!(events.is_ok());
-        assert!(!events.unwrap().is_empty());
+        assert!(!events.is_empty());
     }
 }

@@ -3,16 +3,15 @@
 //! Handles formatting of fenced code blocks.
 
 use crate::config::CodeConfig;
-use crate::error::Result;
 
 /// Format code blocks in markdown content.
 ///
 /// Ensures consistent fence style and optionally adds language tags.
-pub fn format_code_blocks(content: &str, config: &CodeConfig) -> Result<String> {
+pub fn format_code_blocks(content: &str, config: &CodeConfig) -> String {
     let lines: Vec<&str> = content.lines().collect();
     let mut result = Vec::new();
     let mut in_code_block = false;
-    let mut code_block_lines = Vec::new();
+    let mut code_block_lines: Vec<(String, String)> = Vec::new();
     let mut current_fence = String::new();
 
     for line in lines {
@@ -20,7 +19,23 @@ pub fn format_code_blocks(content: &str, config: &CodeConfig) -> Result<String> 
 
         // Detect code fence
         if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
-            if !in_code_block {
+            if in_code_block {
+                // End of code block
+                let (fence, lang) = &code_block_lines[0];
+                result.push(format!("{fence}{lang}"));
+
+                // Add code content
+                for (_, line) in code_block_lines.iter().skip(1) {
+                    result.push(line.clone());
+                }
+
+                // Add closing fence
+                result.push(config.fence_style.clone());
+
+                code_block_lines.clear();
+                in_code_block = false;
+                current_fence.clear();
+            } else {
                 // Start of code block
                 in_code_block = true;
                 current_fence = if trimmed.starts_with("```") {
@@ -39,23 +54,6 @@ pub fn format_code_blocks(content: &str, config: &CodeConfig) -> Result<String> 
 
                 code_block_lines.clear();
                 code_block_lines.push((current_fence.clone(), lang));
-            } else {
-                // End of code block
-                let (fence, lang) = &code_block_lines[0];
-                result.push(format!("{fence}{lang}"));
-
-                // Add code content
-                for i in 1..code_block_lines.len() {
-                    result.push(code_block_lines[i].1.clone());
-                }
-
-                // Add closing fence
-                result.push(config.fence_style.clone());
-
-                code_block_lines.clear();
-                in_code_block = false;
-                current_fence.clear();
-                continue;
             }
         } else if in_code_block {
             code_block_lines.push((String::new(), line.to_string()));
@@ -69,7 +67,7 @@ pub fn format_code_blocks(content: &str, config: &CodeConfig) -> Result<String> 
         result.extend(code_block_lines.iter().map(|(_, line)| line.clone()));
     }
 
-    Ok(result.join("\n"))
+    result.join("\n")
 }
 
 #[cfg(test)]
@@ -80,7 +78,7 @@ mod tests {
     fn test_format_code_blocks() {
         let input = "```rust\nfn main() {}\n```";
         let config = CodeConfig::default();
-        let result = format_code_blocks(input, &config).unwrap();
+        let result = format_code_blocks(input, &config);
         assert!(result.contains("```rust"));
         assert!(result.contains("fn main()"));
     }
@@ -89,7 +87,7 @@ mod tests {
     fn test_format_code_blocks_tilde() {
         let input = "~~~python\nprint('hello')\n~~~";
         let config = CodeConfig::default();
-        let result = format_code_blocks(input, &config).unwrap();
+        let result = format_code_blocks(input, &config);
         assert!(result.contains("python"));
     }
 }

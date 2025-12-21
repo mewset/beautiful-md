@@ -3,12 +3,11 @@
 //! Handles spacing and normalization of Markdown headings.
 
 use crate::config::HeadingConfig;
-use crate::error::Result;
 
 /// Format headings in markdown content.
 ///
 /// Ensures consistent spacing before/after headings and space after `#` symbols.
-pub fn format_headings(content: &str, config: &HeadingConfig) -> Result<String> {
+pub fn format_headings(content: &str, config: &HeadingConfig) -> String {
     let lines: Vec<&str> = content.lines().collect();
     let mut result: Vec<String> = Vec::new();
     let mut i = 0;
@@ -66,7 +65,7 @@ pub fn format_headings(content: &str, config: &HeadingConfig) -> Result<String> 
         i += 1;
     }
 
-    Ok(result.join("\n"))
+    result.join("\n")
 }
 
 /// Check if a line is a heading.
@@ -127,7 +126,7 @@ mod tests {
             space_after_hash: true,
         };
 
-        let result = format_headings(input, &config).unwrap();
+        let result = format_headings(input, &config);
         assert!(result.contains("# Heading"));
     }
 }

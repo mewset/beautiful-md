@@ -51,6 +51,7 @@
 #![warn(missing_docs)]
 #![warn(clippy::all, clippy::pedantic)]
 #![allow(clippy::module_name_repetitions)]
+#![allow(clippy::multiple_crate_versions)]
 
 pub mod config;
 pub mod error;
