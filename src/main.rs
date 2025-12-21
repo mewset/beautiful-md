@@ -17,8 +17,12 @@ fn main() -> Result<()> {
 
     // Load configuration
     let config = if let Some(config_path) = &args.config {
-        Config::from_file(config_path)
-            .with_context(|| format!("Failed to load config from {}", config_path.display()))?
+        Config::from_file(config_path).with_context(|| {
+            format!(
+                "Failed to load config from {}\n\nHint: If you wanted to generate a config file, use:\n  beautiful-md config",
+                config_path.display()
+            )
+        })?
     } else {
         Config::load_default()
     };
