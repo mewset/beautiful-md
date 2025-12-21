@@ -1,6 +1,6 @@
 [package]
 name = "beautiful-md"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 rust-version = "1.70"
 authors = ["mewset"]
@@ -10,6 +10,10 @@ repository = "https://github.com/mewset/beautiful-md"
 keywords = ["markdown", "formatter", "cli", "beautify"]
 categories = ["command-line-utilities", "text-processing"]
 readme = "README.md"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 # CLI argument parsing
