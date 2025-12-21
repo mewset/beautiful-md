@@ -4,8 +4,10 @@
 //! formatted markdown.
 
 use crate::config::Config;
+use crate::diagnostics::Diagnostics;
 use crate::error::{Error, Result};
 use crate::formatters;
+use crate::preprocessor;
 
 /// Format markdown content according to configuration.
 ///
@@ -15,14 +17,17 @@ use crate::formatters;
 /// # Errors
 ///
 /// Returns an error if parsing or formatting fails.
-pub fn format(content: &str, config: &Config) -> Result<String> {
+pub fn format(content: &str, config: &Config) -> Result<(String, Diagnostics)> {
+    // Pre-process to fix common issues and collect diagnostics
+    let (preprocessed, diagnostics) = preprocessor::preprocess(content);
+
     // Parse markdown
-    let events = parse_markdown(content);
+    let events = parse_markdown(&preprocessed);
 
     // Apply formatters in order
     let formatted = apply_formatters(&events, config)?;
 
-    Ok(formatted)
+    Ok((formatted, diagnostics))
 }
 
 /// Parse markdown content into events.

@@ -48,6 +48,10 @@ fn main() -> Result<()> {
         return check_files(&files, &config);
     }
 
+    if args.dry_run {
+        return dry_run_files(&files, &config);
+    }
+
     if args.in_place {
         format_files_in_place(&files, &config, args.verbose)?;
     } else if let Some(output_path) = &args.output {
@@ -96,8 +100,14 @@ fn format_files_in_place(
         if verbose {
             println!("Formatting {}", file.display());
         }
-        format_file(file, config)
+        let diagnostics = format_file(file, config)
             .with_context(|| format!("Failed to format {}", file.display()))?;
+
+        // Print diagnostics to stderr
+        if !diagnostics.is_empty() {
+            eprintln!("\n{}:", file.display());
+            diagnostics.print_to_stderr();
+        }
     }
     Ok(())
 }
@@ -107,11 +117,17 @@ fn format_to_file(input: &Path, output: &Path, config: &Config) -> Result<()> {
     let content =
         fs::read_to_string(input).with_context(|| format!("Failed to read {}", input.display()))?;
 
-    let formatted = format_markdown(&content, config)
+    let (formatted, diagnostics) = format_markdown(&content, config)
         .with_context(|| format!("Failed to format {}", input.display()))?;
 
     fs::write(output, formatted)
         .with_context(|| format!("Failed to write to {}", output.display()))?;
+
+    // Print diagnostics to stderr
+    if !diagnostics.is_empty() {
+        eprintln!("\n{}:", input.display());
+        diagnostics.print_to_stderr();
+    }
 
     Ok(())
 }
@@ -125,10 +141,18 @@ fn format_to_stdout(files: &[std::path::PathBuf], config: &Config) -> Result<()>
         let content = fs::read_to_string(file)
             .with_context(|| format!("Failed to read {}", file.display()))?;
 
-        let formatted = format_markdown(&content, config)
+        let (formatted, diagnostics) = format_markdown(&content, config)
             .with_context(|| format!("Failed to format {}", file.display()))?;
 
         writeln!(handle, "{formatted}").context("Failed to write to stdout")?;
+
+        // Print diagnostics to stderr (so they don't pollute stdout)
+        if !diagnostics.is_empty() {
+            drop(handle); // Release stdout lock
+            eprintln!("\n{}:", file.display());
+            diagnostics.print_to_stderr();
+            handle = stdout.lock(); // Re-acquire lock
+        }
     }
 
     Ok(())
@@ -142,7 +166,7 @@ fn check_files(files: &[std::path::PathBuf], config: &Config) -> Result<()> {
         let content = fs::read_to_string(file)
             .with_context(|| format!("Failed to read {}", file.display()))?;
 
-        let formatted = format_markdown(&content, config)
+        let (formatted, _diagnostics) = format_markdown(&content, config)
             .with_context(|| format!("Failed to format {}", file.display()))?;
 
         if content != formatted {
@@ -160,6 +184,42 @@ fn check_files(files: &[std::path::PathBuf], config: &Config) -> Result<()> {
         }
         anyhow::bail!("{} file(s) need formatting", needs_formatting.len());
     }
+}
+
+/// Dry run: analyze files and report issues without modifying them.
+fn dry_run_files(files: &[std::path::PathBuf], config: &Config) -> Result<()> {
+    let mut total_issues = 0;
+
+    for file in files {
+        let content = fs::read_to_string(file)
+            .with_context(|| format!("Failed to read {}", file.display()))?;
+
+        let (_formatted, diagnostics) = format_markdown(&content, config)
+            .with_context(|| format!("Failed to analyze {}", file.display()))?;
+
+        println!("\n📄 {}", file.display());
+
+        if diagnostics.is_empty() {
+            println!("   ✅ No issues found");
+        } else {
+            total_issues += diagnostics.len();
+            diagnostics.print_to_stderr();
+        }
+    }
+
+    println!("\n{}", "=".repeat(50));
+    if total_issues == 0 {
+        println!("✅ All files are clean! No issues found.");
+    } else {
+        println!(
+            "⚠️  Found {} issue(s) across {} file(s)",
+            total_issues,
+            files.len()
+        );
+        println!("\nRun without --dry-run to fix these issues automatically.");
+    }
+
+    Ok(())
 }
 
 /// Expand glob patterns into file paths.

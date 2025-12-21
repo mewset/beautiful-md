@@ -11,7 +11,7 @@
 //!
 //! let markdown = "# Heading\n\n|Name|Age|\n|---|---|\n|Alice|30|";
 //! let config = Config::default();
-//! let formatted = format_markdown(markdown, &config).unwrap();
+//! let (formatted, _diagnostics) = format_markdown(markdown, &config).unwrap();
 //! println!("{}", formatted);
 //! ```
 //!
@@ -54,15 +54,20 @@
 #![allow(clippy::multiple_crate_versions)]
 
 pub mod config;
+pub mod diagnostics;
 pub mod error;
 mod formatter;
 mod formatters;
+mod preprocessor;
 
 // Re-export main types for convenience
 pub use config::Config;
+pub use diagnostics::Diagnostics;
 pub use error::{Error, Result};
 
 /// Format markdown content according to the provided configuration.
+///
+/// Returns the formatted markdown and any diagnostics collected during processing.
 ///
 /// # Errors
 ///
@@ -75,21 +80,26 @@ pub use error::{Error, Result};
 ///
 /// let markdown = "# Heading\n\nSome text.";
 /// let config = Config::default();
-/// let result = format_markdown(markdown, &config);
-/// assert!(result.is_ok());
+/// let (formatted, diagnostics) = format_markdown(markdown, &config).unwrap();
+/// assert!(!formatted.is_empty());
 /// ```
-pub fn format_markdown(content: &str, config: &Config) -> Result<String> {
+pub fn format_markdown(content: &str, config: &Config) -> Result<(String, Diagnostics)> {
     formatter::format(content, config)
 }
 
 /// Format a markdown file in-place.
 ///
+/// Returns diagnostics collected during processing.
+///
 /// # Errors
 ///
 /// Returns an error if the file cannot be read, parsed, formatted, or written.
-pub fn format_file<P: AsRef<std::path::Path>>(path: P, config: &Config) -> Result<()> {
+pub fn format_file<P: AsRef<std::path::Path>>(
+    path: P,
+    config: &Config,
+) -> Result<Diagnostics> {
     let content = std::fs::read_to_string(path.as_ref())?;
-    let formatted = format_markdown(&content, config)?;
+    let (formatted, diagnostics) = format_markdown(&content, config)?;
     std::fs::write(path.as_ref(), formatted)?;
-    Ok(())
+    Ok(diagnostics)
 }

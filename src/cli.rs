@@ -44,6 +44,10 @@ pub struct Cli {
     /// Check mode: exit with error if files need formatting
     #[arg(long)]
     pub check: bool,
+
+    /// Dry run: analyze files and report issues without modifying them
+    #[arg(long)]
+    pub dry_run: bool,
 }
 
 /// Subcommands for beautiful-md.

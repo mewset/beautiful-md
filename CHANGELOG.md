@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2024-12-21
+
+### Added
+- **Intelligent Preprocessor**: Automatically fixes common markdown issues before formatting:
+  - Headings without spaces: `#NoSpace` → `# NoSpace`
+  - Trailing hashes: `####Title####` → `#### Title`
+  - List markers without spaces: `-Item` → `- Item`
+  - Missing table pipes: `Name|Age` → `|Name|Age|`
+- **Diagnostics System**: Comprehensive issue reporting with line numbers
+  - Warning severity for serious issues (e.g., inconsistent table columns)
+  - Info severity for auto-fixed issues (e.g., missing pipes)
+  - Detailed output with code snippets showing before/after
+- **Dry-run Mode** (`--dry-run`): Analyze files and report issues without modifying them
+  - Shows all detected problems with line numbers
+  - Displays summary of total issues found
+  - Helps users understand what will be changed before running formatter
+
+### Changed
+- All formatting functions now return diagnostics alongside formatted content
+- Error messages now print to stderr for better CLI composability
+
 ## [0.1.1] - 2024-12-21
 
 ### Added
@@ -41,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Full documentation (README, CONTRIBUTING, rustdoc)
 - Dual licensing (MIT OR Apache-2.0)
 
-[unreleased]: https://github.com/mewset/beautiful-md/compare/v0.1.1...HEAD
+[unreleased]: https://github.com/mewset/beautiful-md/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/mewset/beautiful-md/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/mewset/beautiful-md/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/mewset/beautiful-md/releases/tag/v0.1.0
