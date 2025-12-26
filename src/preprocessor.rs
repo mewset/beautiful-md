@@ -312,8 +312,8 @@ mod tests {
     fn test_bold_not_list() {
         let input = "**Table of Contents:**\n- Item 1";
         let (result, _diag) = preprocess(input);
-        eprintln!("INPUT:\n{}", input);
-        eprintln!("\nOUTPUT:\n{}", result);
+        eprintln!("INPUT:\n{input}");
+        eprintln!("\nOUTPUT:\n{result}");
 
         // Bold text should NOT be converted to list
         assert!(result.contains("**Table of Contents:**"));

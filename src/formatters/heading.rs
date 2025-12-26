@@ -140,8 +140,8 @@ mod tests {
         };
 
         let result = format_headings(input, &config);
-        eprintln!("INPUT:\n{}", input);
-        eprintln!("\nOUTPUT:\n{}", result);
+        eprintln!("INPUT:\n{input}");
+        eprintln!("\nOUTPUT:\n{result}");
 
         // Bold text should not be affected
         assert!(result.contains("**Table of Contents:**"));

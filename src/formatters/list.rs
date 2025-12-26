@@ -140,8 +140,8 @@ mod tests {
         };
 
         let result = format_lists(input, &config);
-        eprintln!("INPUT:\n{}", input);
-        eprintln!("\nOUTPUT:\n{}", result);
+        eprintln!("INPUT:\n{input}");
+        eprintln!("\nOUTPUT:\n{result}");
 
         // Bold text should NOT be converted to list item
         assert!(result.contains("**Table of Contents:**"));
