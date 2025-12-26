@@ -101,6 +101,12 @@ fn fix_list_markers(content: &str) -> String {
                 return format!("{}- {}", " ".repeat(leading_spaces), rest.trim_start());
             }
 
+            // Skip bold text (** at start) - not a list marker
+            if trimmed.starts_with("**") {
+                return line.to_string();
+            }
+
+            // Fix single * without space (list marker)
             if trimmed.starts_with('*') && !trimmed.starts_with("* ") {
                 let rest = &trimmed[1..];
                 return format!("{}* {}", " ".repeat(leading_spaces), rest.trim_start());
@@ -300,5 +306,17 @@ mod tests {
         let expected = "# NoSpace\n- Item\n|Name|Age|";
         let (result, _diagnostics) = preprocess(input);
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_bold_not_list() {
+        let input = "**Table of Contents:**\n- Item 1";
+        let (result, _diag) = preprocess(input);
+        eprintln!("INPUT:\n{}", input);
+        eprintln!("\nOUTPUT:\n{}", result);
+
+        // Bold text should NOT be converted to list
+        assert!(result.contains("**Table of Contents:**"));
+        assert!(!result.contains("* *Table"));
     }
 }

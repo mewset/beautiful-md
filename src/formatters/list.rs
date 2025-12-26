@@ -128,4 +128,23 @@ mod tests {
         assert!(result.contains("- Item 2"));
         assert!(result.contains("- Item 3"));
     }
+
+    #[test]
+    fn test_bold_before_list() {
+        // This is what cmark() produces
+        let input = "# Test\n\n**Table of Contents:**\n\n* Tables with various structures\n* Headings at different levels";
+        let config = ListConfig {
+            indent_size: 2,
+            marker: String::from("-"),
+            normalize_numbers: true,
+        };
+
+        let result = format_lists(input, &config);
+        eprintln!("INPUT:\n{}", input);
+        eprintln!("\nOUTPUT:\n{}", result);
+
+        // Bold text should NOT be converted to list item
+        assert!(result.contains("**Table of Contents:**"));
+        assert!(!result.contains("- *Table of Contents"));
+    }
 }

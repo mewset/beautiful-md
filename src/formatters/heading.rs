@@ -129,4 +129,21 @@ mod tests {
         let result = format_headings(input, &config);
         assert!(result.contains("# Heading"));
     }
+
+    #[test]
+    fn test_bold_before_list() {
+        let input = "# Test\n\n**Table of Contents:**\n\n* Tables with various structures";
+        let config = HeadingConfig {
+            blank_lines_before: 2,
+            blank_lines_after: 1,
+            space_after_hash: true,
+        };
+
+        let result = format_headings(input, &config);
+        eprintln!("INPUT:\n{}", input);
+        eprintln!("\nOUTPUT:\n{}", result);
+
+        // Bold text should not be affected
+        assert!(result.contains("**Table of Contents:**"));
+    }
 }
