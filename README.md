@@ -7,6 +7,7 @@
 
 A CLI tool and Rust library to format and beautify Markdown files with configurable style rules.
 
+
 ## Features
 
 - ✨ **Table Formatting**: Align columns, consistent padding, and clean appearance
@@ -17,13 +18,16 @@ A CLI tool and Rust library to format and beautify Markdown files with configura
 - 🚀 **Fast**: Written in Rust for optimal performance
 - 📦 **Multiple Modes**: In-place editing, stdout output, or file output
 
+
 ## Installation
+
 
 ### From crates.io
 
 ```bash
 cargo install beautiful-md
 ```
+
 
 ### From source
 
@@ -33,7 +37,9 @@ cd beautiful-md
 cargo install --path .
 ```
 
+
 ## Usage
+
 
 ### Command Line
 
@@ -57,6 +63,7 @@ beautiful-md --check README.md
 beautiful-md config
 ```
 
+
 ### As a Library
 
 ```rust
@@ -70,6 +77,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 ```
+
 
 ## Configuration
 
@@ -96,28 +104,39 @@ ensure_language_tag = false
 fence_style = "```"
 ```
 
+
 ### Configuration Options
 
+
 #### Tables
+
 - `align` (bool): Enable column alignment
 - `min_column_width` (usize): Minimum width for columns
 - `padding` (usize): Spaces around cell content
 
+
 #### Headings
+
 - `blank_lines_before` (usize): Empty lines before headings
 - `blank_lines_after` (usize): Empty lines after headings
 - `space_after_hash` (bool): Ensure space after `#` symbols
 
+
 #### Lists
+
 - `indent_size` (usize): Spaces per indentation level
 - `marker` (string): Bullet character (`-`, `*`, or `+`)
 - `normalize_numbers` (bool): Fix ordered list numbering
 
+
 #### Code
+
 - `ensure_language_tag` (bool): Require language tags
-- `fence_style` (string): Fence style (` ``` ` or `~~~`)
+- `fence_style` (string): Fence style (```` ``` ```` or `~~~`)
+
 
 ## Examples
+
 
 ### Before
 
@@ -134,6 +153,7 @@ fence_style = "```"
 + Item 3
 ```
 
+
 ### After
 
 ```markdown
@@ -149,12 +169,15 @@ fence_style = "```"
 - Item 3
 ```
 
+
 ## Development
+
 
 ### Prerequisites
 
 - Rust 1.70 or later
 - Cargo
+
 
 ### Building
 
@@ -162,11 +185,13 @@ fence_style = "```"
 cargo build --release
 ```
 
+
 ### Testing
 
 ```bash
 cargo test
 ```
+
 
 ### Linting
 
@@ -175,9 +200,11 @@ cargo clippy -- -D warnings
 cargo fmt --check
 ```
 
+
 ## Contributing
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
 
 ## License
 
@@ -187,6 +214,7 @@ Licensed under either of:
 - MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
 at your option.
+
 
 ### Contribution
 

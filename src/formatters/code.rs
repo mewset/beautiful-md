@@ -7,6 +7,10 @@ use crate::config::CodeConfig;
 /// Format code blocks in markdown content.
 ///
 /// Ensures consistent fence style and optionally adds language tags.
+///
+/// Note: This function is currently unused as code blocks are now protected
+/// at an earlier stage in the formatting pipeline to preserve them verbatim.
+#[allow(dead_code)]
 pub fn format_code_blocks(content: &str, config: &CodeConfig) -> String {
     let lines: Vec<&str> = content.lines().collect();
     let mut result = Vec::new();

@@ -18,16 +18,22 @@ use crate::preprocessor;
 ///
 /// Returns an error if parsing or formatting fails.
 pub fn format(content: &str, config: &Config) -> Result<(String, Diagnostics)> {
-    // Pre-process to fix common issues and collect diagnostics
-    let (preprocessed, diagnostics) = preprocessor::preprocess(content);
+    // Extract code blocks FIRST to preserve them completely verbatim
+    let (protected_content, code_blocks) = formatters::extract_code_blocks_early(content);
 
-    // Parse markdown
+    // Pre-process to fix common issues and collect diagnostics (without code blocks)
+    let (preprocessed, diagnostics) = preprocessor::preprocess(&protected_content);
+
+    // Parse markdown (without code blocks)
     let events = parse_markdown(&preprocessed);
 
     // Apply formatters in order
     let formatted = apply_formatters(&events, config)?;
 
-    Ok((formatted, diagnostics))
+    // Restore code blocks with original content preserved
+    let final_content = formatters::restore_code_blocks_early(&formatted, &code_blocks, config);
+
+    Ok((final_content, diagnostics))
 }
 
 /// Parse markdown content into events.
