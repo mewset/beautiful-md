@@ -2,6 +2,7 @@
 //!
 //! Collects warnings about problematic markdown that couldn't be automatically fixed.
 
+use owo_colors::{OwoColorize, Stream, Style};
 use std::fmt;
 
 /// Severity level of a diagnostic message.
@@ -140,16 +141,77 @@ impl Diagnostics {
 
     /// Print diagnostics to stderr.
     pub fn print_to_stderr(&self) {
+        self.print_to_stderr_impl(false);
+    }
+
+    /// Print diagnostics to stderr with colors.
+    pub fn print_to_stderr_colored(&self) {
+        self.print_to_stderr_impl(true);
+    }
+
+    /// Internal implementation for printing diagnostics.
+    fn print_to_stderr_impl(&self, use_colors: bool) {
         if self.is_empty() {
             return;
         }
 
         let len = self.len();
-        eprintln!("\n{len} issues found:");
-        for diagnostic in &self.messages {
-            eprintln!("{diagnostic}");
+
+        if use_colors {
+            let header = format!("{len} issues found:");
+            let header_style = Style::new().yellow().bold();
+            eprintln!(
+                "\n{}",
+                header.if_supports_color(Stream::Stderr, |text| text.style(header_style))
+            );
+            for diagnostic in &self.messages {
+                Self::print_diagnostic_colored(diagnostic);
+            }
+        } else {
+            eprintln!("\n{len} issues found:");
+            for diagnostic in &self.messages {
+                eprintln!("{diagnostic}");
+            }
         }
         eprintln!();
+    }
+
+    /// Print a single diagnostic with colors.
+    fn print_diagnostic_colored(diagnostic: &Diagnostic) {
+        let severity_icon = match diagnostic.severity {
+            Severity::Warning => "⚠️",
+            Severity::Info => "ℹ️",
+        };
+
+        let line_text = format!("Line {}", diagnostic.line);
+        eprint!(
+            "{} {}: ",
+            severity_icon,
+            line_text.if_supports_color(Stream::Stderr, |text| text.dimmed())
+        );
+
+        match diagnostic.severity {
+            Severity::Warning => eprintln!(
+                "{}",
+                diagnostic
+                    .message
+                    .if_supports_color(Stream::Stderr, |text| text.yellow())
+            ),
+            Severity::Info => eprintln!(
+                "{}",
+                diagnostic
+                    .message
+                    .if_supports_color(Stream::Stderr, |text| text.cyan())
+            ),
+        }
+
+        if let Some(snippet) = &diagnostic.snippet {
+            eprintln!(
+                "  {} {}",
+                "│".if_supports_color(Stream::Stderr, |text| text.dimmed()),
+                snippet.if_supports_color(Stream::Stderr, |text| text.dimmed())
+            );
+        }
     }
 }
 

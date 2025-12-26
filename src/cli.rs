@@ -48,6 +48,10 @@ pub struct Cli {
     /// Dry run: analyze files and report issues without modifying them
     #[arg(long)]
     pub dry_run: bool,
+
+    /// Disable colored output
+    #[arg(long)]
+    pub no_color: bool,
 }
 
 /// Subcommands for beautiful-md.

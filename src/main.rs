@@ -9,11 +9,17 @@ use std::io::{self, Write};
 use std::path::Path;
 
 mod cli;
+mod colors;
 
 use cli::{Cli, Commands};
 
 fn main() -> Result<()> {
     let args = Cli::parse_args();
+
+    // Handle color settings
+    if args.no_color {
+        colors::set_override(false);
+    }
 
     // Load configuration
     let config = if let Some(config_path) = &args.config {
@@ -81,7 +87,11 @@ fn handle_subcommand(command: Commands, config: &Config) -> Result<()> {
             config
                 .save(&output)
                 .with_context(|| format!("Failed to write config to {}", output.display()))?;
-            println!("Configuration written to {}", output.display());
+            println!(
+                "{} {}",
+                colors::success("✓ Configuration written to"),
+                colors::path(output.display().to_string())
+            );
         }
         Commands::Check { files } => {
             return check_files(&files, config);
@@ -98,15 +108,19 @@ fn format_files_in_place(
 ) -> Result<()> {
     for file in files {
         if verbose {
-            println!("Formatting {}", file.display());
+            println!(
+                "{} {}",
+                colors::info("Formatting"),
+                colors::path(file.display().to_string())
+            );
         }
         let diagnostics = format_file(file, config)
             .with_context(|| format!("Failed to format {}", file.display()))?;
 
         // Print diagnostics to stderr
         if !diagnostics.is_empty() {
-            eprintln!("\n{}:", file.display());
-            diagnostics.print_to_stderr();
+            eprintln!("\n{}:", colors::path(file.display().to_string()));
+            diagnostics.print_to_stderr_colored();
         }
     }
     Ok(())
@@ -125,8 +139,8 @@ fn format_to_file(input: &Path, output: &Path, config: &Config) -> Result<()> {
 
     // Print diagnostics to stderr
     if !diagnostics.is_empty() {
-        eprintln!("\n{}:", input.display());
-        diagnostics.print_to_stderr();
+        eprintln!("\n{}:", colors::path(input.display().to_string()));
+        diagnostics.print_to_stderr_colored();
     }
 
     Ok(())
@@ -149,8 +163,8 @@ fn format_to_stdout(files: &[std::path::PathBuf], config: &Config) -> Result<()>
         // Print diagnostics to stderr (so they don't pollute stdout)
         if !diagnostics.is_empty() {
             drop(handle); // Release stdout lock
-            eprintln!("\n{}:", file.display());
-            diagnostics.print_to_stderr();
+            eprintln!("\n{}:", colors::path(file.display().to_string()));
+            diagnostics.print_to_stderr_colored();
             handle = stdout.lock(); // Re-acquire lock
         }
     }
@@ -175,12 +189,19 @@ fn check_files(files: &[std::path::PathBuf], config: &Config) -> Result<()> {
     }
 
     if needs_formatting.is_empty() {
-        println!("All files are properly formatted ✓");
+        println!("{}", colors::success("✓ All files are properly formatted"));
         Ok(())
     } else {
-        eprintln!("The following files need formatting:");
+        eprintln!(
+            "{}",
+            colors::error("✗ The following files need formatting:")
+        );
         for file in &needs_formatting {
-            eprintln!("  - {}", file.display());
+            eprintln!(
+                "  {} {}",
+                colors::error("-"),
+                colors::path(file.display().to_string())
+            );
         }
         anyhow::bail!("{} file(s) need formatting", needs_formatting.len());
     }
@@ -197,26 +218,35 @@ fn dry_run_files(files: &[std::path::PathBuf], config: &Config) -> Result<()> {
         let (_formatted, diagnostics) = format_markdown(&content, config)
             .with_context(|| format!("Failed to analyze {}", file.display()))?;
 
-        println!("\n📄 {}", file.display());
+        println!("\n📄 {}", colors::path(file.display().to_string()));
 
         if diagnostics.is_empty() {
-            println!("   ✅ No issues found");
+            println!("   {}", colors::success("✓ No issues found"));
         } else {
             total_issues += diagnostics.len();
-            diagnostics.print_to_stderr();
+            diagnostics.print_to_stderr_colored();
         }
     }
 
     println!("\n{}", "=".repeat(50));
     if total_issues == 0 {
-        println!("✅ All files are clean! No issues found.");
+        println!(
+            "{}",
+            colors::success("✓ All files are clean! No issues found.")
+        );
     } else {
         println!(
-            "⚠️  Found {} issue(s) across {} file(s)",
-            total_issues,
-            files.len()
+            "{}",
+            colors::warning(format!(
+                "⚠️  Found {} issue(s) across {} file(s)",
+                total_issues,
+                files.len()
+            ))
         );
-        println!("\nRun without --dry-run to fix these issues automatically.");
+        println!(
+            "\n{}",
+            colors::info("Run without --dry-run to fix these issues automatically.")
+        );
     }
 
     Ok(())
