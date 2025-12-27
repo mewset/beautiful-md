@@ -5,6 +5,9 @@
 
 use crate::diagnostics::{Diagnostic, DiagnosticKind, Diagnostics, Severity};
 
+/// Maximum heading level supported by Markdown specification (h1 through h6).
+const MAX_HEADING_LEVEL: usize = 6;
+
 /// Pre-process markdown content to fix common issues.
 ///
 /// Returns the preprocessed content and any diagnostics collected.
@@ -33,6 +36,8 @@ fn fix_headings(content: &str) -> String {
             let trimmed = line.trim();
 
             // Check if line starts with hashes
+            // Note: Code blocks are already extracted by formatter, but we keep
+            // the check for defensive programming in case architecture changes.
             if trimmed.starts_with('#') && !trimmed.starts_with("```") {
                 let mut chars = trimmed.chars();
                 let mut hashes = String::new();
@@ -41,7 +46,7 @@ fn fix_headings(content: &str) -> String {
                 for ch in chars.by_ref() {
                     if ch == '#' {
                         hashes.push(ch);
-                        if hashes.len() > 6 {
+                        if hashes.len() > MAX_HEADING_LEVEL {
                             // Too many hashes, not a valid heading
                             return line.to_string();
                         }
@@ -82,6 +87,21 @@ fn fix_headings(content: &str) -> String {
     lines.join("\n")
 }
 
+/// Format a list line with proper spacing.
+///
+/// Returns a properly formatted list line with:
+/// - Leading indentation preserved
+/// - Space after marker
+/// - Content trimmed
+fn format_list_line(leading_spaces: usize, marker: &str, content: &str) -> String {
+    format!(
+        "{}{} {}",
+        " ".repeat(leading_spaces),
+        marker,
+        content.trim_start()
+    )
+}
+
 /// Fix list marker inconsistencies.
 ///
 /// Normalizes list markers while preserving structure:
@@ -98,7 +118,7 @@ fn fix_list_markers(content: &str) -> String {
             if trimmed.starts_with('-') && !trimmed.starts_with("---") && !trimmed.starts_with("- ")
             {
                 let rest = &trimmed[1..];
-                return format!("{}- {}", " ".repeat(leading_spaces), rest.trim_start());
+                return format_list_line(leading_spaces, "-", rest);
             }
 
             // Skip bold text (** at start) - not a list marker
@@ -109,12 +129,12 @@ fn fix_list_markers(content: &str) -> String {
             // Fix single * without space (list marker)
             if trimmed.starts_with('*') && !trimmed.starts_with("* ") {
                 let rest = &trimmed[1..];
-                return format!("{}* {}", " ".repeat(leading_spaces), rest.trim_start());
+                return format_list_line(leading_spaces, "*", rest);
             }
 
             if trimmed.starts_with('+') && !trimmed.starts_with("+ ") {
                 let rest = &trimmed[1..];
-                return format!("{}+ {}", " ".repeat(leading_spaces), rest.trim_start());
+                return format_list_line(leading_spaces, "+", rest);
             }
 
             // Check for ordered list without space
@@ -123,12 +143,8 @@ fn fix_list_markers(content: &str) -> String {
                 if before_dot.chars().all(|c| c.is_ascii_digit()) {
                     let after_dot = &trimmed[pos + 1..];
                     if !after_dot.starts_with(' ') && !after_dot.is_empty() {
-                        return format!(
-                            "{}{}. {}",
-                            " ".repeat(leading_spaces),
-                            before_dot,
-                            after_dot.trim_start()
-                        );
+                        let marker = format!("{before_dot}.");
+                        return format_list_line(leading_spaces, &marker, after_dot);
                     }
                 }
             }
@@ -147,6 +163,8 @@ fn fix_list_markers(content: &str) -> String {
 /// - Missing closing pipes: `Name|Age` → `|Name|Age|`
 fn fix_table_pipes(content: &str, diagnostics: &mut Diagnostics) -> String {
     let mut lines: Vec<String> = Vec::new();
+    // Note: Code blocks are already extracted by formatter, but we keep
+    // this tracking for defensive programming in case architecture changes.
     let mut in_code_block = false;
     let mut line_number = 0;
     let mut in_table = false;
@@ -156,14 +174,14 @@ fn fix_table_pipes(content: &str, diagnostics: &mut Diagnostics) -> String {
         line_number += 1;
         let trimmed = line.trim();
 
-        // Track code blocks
+        // Track code blocks (defensive check - blocks already extracted upstream)
         if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
             in_code_block = !in_code_block;
             lines.push(line.to_string());
             continue;
         }
 
-        // Skip if in code block
+        // Skip if in code block (defensive check - should not occur in practice)
         if in_code_block {
             lines.push(line.to_string());
             continue;

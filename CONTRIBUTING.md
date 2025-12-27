@@ -2,11 +2,33 @@
 
 Thank you for your interest in contributing to beautiful-md! This document provides guidelines and instructions for contributing.
 
+
+## Quick Start
+
+```bash
+# Clone and setup
+git clone https://github.com/mewset/beautiful-md.git
+cd beautiful-md
+
+# Make your changes
+git checkout -b feature/your-feature
+
+# Before committing - ALWAYS run this!
+make check
+
+# If all passes ✅
+git commit -m "your changes"
+git push origin feature/your-feature
+```
+
+
 ## Code of Conduct
 
 This project follows the [Rust Code of Conduct](https://www.rust-lang.org/policies/code-of-conduct). Please be respectful and constructive in all interactions.
 
+
 ## How to Contribute
+
 
 ### Reporting Bugs
 
@@ -19,6 +41,7 @@ If you find a bug, please open an issue with:
 - Your environment (OS, Rust version, beautiful-md version)
 - Sample markdown that demonstrates the issue
 
+
 ### Suggesting Features
 
 Feature requests are welcome! Please open an issue describing:
@@ -28,54 +51,80 @@ Feature requests are welcome! Please open an issue describing:
 - Alternative solutions you've considered
 - Example use cases
 
+
 ### Pull Requests
 
 1. **Fork and Clone**
 
-   ```bash
+```bash
    git clone https://github.com/mewset/beautiful-md.git
    cd beautiful-md
-   ```
+```
 
-2. **Create a Branch**
+1. **Create a Branch**
 
-   ```bash
+```bash
    git checkout -b feature/your-feature-name
-   ```
+```
 
-3. **Make Your Changes**
+1. **Make Your Changes**
+   
+  - Follow the [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/)
+  - Write tests for new functionality
+  - Update documentation as needed
+1. **Pre-Commit Checks** ⚡
+   
+   Before committing, **always** run the full CI check suite locally:
 
-   - Follow the [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/)
-   - Write tests for new functionality
-   - Update documentation as needed
-   - Ensure all tests pass: `cargo test`
-   - Run clippy: `cargo clippy -- -D warnings`
-   - Format code: `cargo fmt`
+```bash
+   make check
+```
 
-4. **Commit Your Changes**
+This runs the same checks as GitHub Actions CI:
 
+- ✅ Code formatting (`cargo fmt --check`)
+- ✅ Clippy lints (`cargo clippy -- -D warnings`)
+- ✅ All tests (`cargo test --verbose`)
+- ✅ Documentation build (`cargo doc`)
+- ✅ Release build (`cargo build --release`)
+
+**Why?** This ensures your PR will pass CI and prevents wasting CI resources on fixable issues.
+
+You can also run individual checks:
+
+```bash
+   make test      # Run tests only
+   make fmt       # Format code
+   make clippy    # Run clippy only
+```
+
+1. **Commit Your Changes**
+   
    Write clear, descriptive commit messages:
 
-   ```
+```
    Add table column alignment feature
 
    - Implement column width calculation
    - Add padding configuration option
    - Add tests for table formatting
-   ```
+```
 
-5. **Push and Create PR**
+1. **Push and Create PR**
 
-   ```bash
+```bash
    git push origin feature/your-feature-name
-   ```
+```
 
-   Then create a pull request on GitHub with:
-   - Description of changes
-   - Related issue numbers
-   - Testing performed
+Then create a pull request on GitHub with:
+
+- Description of changes
+- Related issue numbers
+- Testing performed
+
 
 ## Development Guidelines
+
 
 ### Code Style
 
@@ -83,6 +132,7 @@ Feature requests are welcome! Please open an issue describing:
 - Use `cargo fmt` with the project's `rustfmt.toml`
 - Pass all `cargo clippy` checks
 - Maintain the existing code organization
+
 
 ### Testing
 
@@ -107,6 +157,7 @@ mod tests {
     }
 }
 ```
+
 
 ### Documentation
 
@@ -139,6 +190,7 @@ pub fn format_tables(content: &str) -> Result<String> {
 }
 ```
 
+
 ### Commit Messages
 
 Follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
@@ -150,6 +202,7 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) specific
 - `refactor:` Code refactoring
 - `perf:` Performance improvements
 - `chore:` Maintenance tasks
+
 
 ## Project Structure
 
@@ -173,11 +226,13 @@ beautiful-md/
 └── benches/            # Benchmarks
 ```
 
+
 ## Getting Help
 
 - Open an issue for questions
 - Join discussions in existing issues
 - Refer to the [documentation](https://docs.rs/beautiful-md)
+
 
 ## License
 

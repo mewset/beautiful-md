@@ -90,7 +90,7 @@ min_column_width = 3
 padding = 1
 
 [headings]
-blank_lines_before = 2
+blank_lines_before = 1
 blank_lines_after = 1
 space_after_hash = true
 

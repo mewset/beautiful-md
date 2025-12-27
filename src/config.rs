@@ -105,7 +105,7 @@ impl Default for TableConfig {
 impl Default for HeadingConfig {
     fn default() -> Self {
         Self {
-            blank_lines_before: 2,
+            blank_lines_before: 1,
             blank_lines_after: 1,
             space_after_hash: true,
         }
@@ -191,7 +191,7 @@ mod tests {
         let config = Config::default();
         assert!(config.tables.align);
         assert_eq!(config.tables.min_column_width, 3);
-        assert_eq!(config.headings.blank_lines_before, 2);
+        assert_eq!(config.headings.blank_lines_before, 1);
         assert_eq!(config.lists.marker, "-");
     }
 

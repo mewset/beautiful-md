@@ -134,7 +134,7 @@ mod tests {
     fn test_bold_before_list() {
         let input = "# Test\n\n**Table of Contents:**\n\n* Tables with various structures";
         let config = HeadingConfig {
-            blank_lines_before: 2,
+            blank_lines_before: 1,
             blank_lines_after: 1,
             space_after_hash: true,
         };

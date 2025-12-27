@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [0.3.3] - 2025-12-27
+
+
+### Changed
+
+- **Default heading spacing**: Changed `blank_lines_before` from 2 to 1 to follow standard Markdown conventions
+  - Users preferring the previous style can configure `blank_lines_before = 2` in `.beautiful-md.toml`
+  - Provides more compact, standards-compliant output by default
+
+### Improved
+
+- **Code quality improvements** in preprocessor module:
+  - Added `MAX_HEADING_LEVEL` constant for better code clarity
+  - Extracted `format_list_line()` helper to reduce code duplication
+  - Added documentation for defensive code block checks
+  - Applied inline format args for clippy compliance
+- **Documentation**: Updated CONTRIBUTING.md with pre-commit CI check workflow (`make check`)
+
+
 ## [0.3.2] - 2025-12-27
 
 
